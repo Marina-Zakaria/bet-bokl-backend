@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-seed-app-config
+      author: home-rental-service
+      changes:
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key,   value: otp_expiry_minutes }
+              - column: { name: config_value,  value: "10" }
+              - column: { name: description,   value: "How long an OTP is valid after it is sent (minutes)" }
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key,   value: otp_max_resend_count }
+              - column: { name: config_value,  value: "3" }
+              - column: { name: description,   value: "Maximum OTP resend attempts within the resend window" }
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key,   value: otp_resend_window_minutes }
+              - column: { name: config_value,  value: "60" }
+              - column: { name: description,   value: "Sliding window in minutes after which otp_resend_count resets" }
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key,   value: login_max_failed_attempts }
+              - column: { name: config_value,  value: "5" }
+              - column: { name: description,   value: "Failed login attempts before account is temporarily locked" }
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key,   value: account_lockout_minutes }
+              - column: { name: config_value,  value: "30" }
+              - column: { name: description,   value: "How long an account stays locked after exceeding failed login attempts (minutes)" }
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key,   value: jwt_access_expiry_minutes }
+              - column: { name: config_value,  value: "60" }
+              - column: { name: description,   value: "JWT access token lifetime (minutes)" }
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key,   value: refresh_token_expiry_days }
+              - column: { name: config_value,  value: "30" }
+              - column: { name: description,   value: "Refresh token lifetime (days)" }

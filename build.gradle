@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.0'
+    id 'io.spring.dependency-management' version '1.1.5'
+}
+
+group = 'com.bokl.homerental'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Web layer
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    // JWT (JJWT 0.12.x)
+    implementation  'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly     'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly     'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    // Persistence
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.liquibase:liquibase-core'
+
+    // Structured logging (JSON output for prod via logback-spring.xml)
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

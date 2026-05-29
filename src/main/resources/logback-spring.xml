@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  logback-spring.xml
+  ─────────────────────────────────────────────────────────────────────────────
+  Uses <springProfile> to switch format automatically:
+    - Any profile except "prod"  →  colored console  (readable during dev)
+    - "prod" profile             →  JSON via Logstash (one object per line)
+
+  Activate prod format:  SPRING_PROFILES_ACTIVE=prod
+  ─────────────────────────────────────────────────────────────────────────────
+-->
+<configuration>
+
+    <!-- Pull spring.application.name into a local variable for use in customFields below -->
+    <springProperty scope="local" name="SERVICE_NAME" source="spring.application.name" defaultValue="unknown-service"/>
+
+    <!-- ── Dev: Spring Boot colored console with traceId ────────────── -->
+    <springProfile name="!prod">
+        <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <!--
+                  Spring Boot 3.x console pattern extended with [traceId].
+                  %X{traceId:-} resolves the MDC key; shows empty string when
+                  no request context is active (startup, scheduled tasks, etc.).
+                -->
+                <pattern>%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %clr([%X{traceId:-}]){blue} %m%n%wEx</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- ── Prod: JSON output for log aggregators ─────────────────────── -->
+    <springProfile name="prod">
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+
+                <!--
+                  Always-present custom field so every line carries the service
+                  name even before MDC is populated by a request.
+                -->
+                <customFields>{"service":"${SERVICE_NAME}"}</customFields>
+
+                <!-- Clean up default Logstash field names -->
+                <fieldNames>
+                    <timestamp>timestamp</timestamp>
+                    <version>[ignore]</version>
+                    <levelValue>[ignore]</levelValue>
+                </fieldNames>
+
+                <!--
+                  Shorten stack traces to keep JSON lines manageable.
+                  Root cause is printed first for faster triage.
+                -->
+                <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                    <maxDepthPerCause>20</maxDepthPerCause>
+                    <shortenedClassNameLength>25</shortenedClassNameLength>
+                    <rootCauseFirst>true</rootCauseFirst>
+                </throwableConverter>
+
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>
