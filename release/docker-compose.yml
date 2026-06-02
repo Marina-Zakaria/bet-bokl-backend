@@ -1,7 +1,7 @@
 services:
 
   app:
-    image: home-rental-service:v1.0.0
+    image: home-rental-service:v1.0.1
     container_name: home-rental-app
     ports:
       - "8080:8080"

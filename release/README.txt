@@ -3,7 +3,7 @@ Home Rental Service  —  Local backend for mobile dev
 
 1. Load the image into Docker (one time per release):
 
-     docker load -i home-rental-service-v1.0.0.tar
+     docker load -i home-rental-service-v1.0.1.tar
 
 2. Start the backend + database:
 

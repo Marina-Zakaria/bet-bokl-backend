@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/auth/resend-otp",
                                 "/auth/forgot-password",
                                 "/auth/reset-password",
-                                "/health"
+                                "/health",
+                                "/locations/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

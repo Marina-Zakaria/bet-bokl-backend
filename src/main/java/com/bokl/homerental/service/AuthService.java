@@ -28,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,21 +75,23 @@ public class AuthService {
     // ── Register ─────────────────────────────────────────────────────────────
 
     public MessageResponse register(RegisterRequest req) {
-        if (authUserRepo.existsByPhone(req.phone())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, msg.get("auth.register.phone_exists"));
+        Optional<AuthUser> existing = authUserRepo.findByPhone(req.phone());
+        if (existing.isPresent()) {
+            AuthUser user = existing.get();
+            if (user.isVerified()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, msg.get("auth.register.phone_exists"));
+            }
+            user.setName(req.name());
+            ensureRegistrationOtp(user);
+            return new MessageResponse(msg.get("auth.register.otp_sent"));
         }
 
         AuthUser user = new AuthUser();
         user.setName(req.name());
         user.setPhone(req.phone());
-
-        OtpService.OtpPair otp = otpService.generate();
-        user.setOtpHash(otp.hash());
-        user.setOtpExpiryTime(Instant.now().plus(otpService.expiryMinutes(), ChronoUnit.MINUTES));
+        ensureRegistrationOtp(user);
 
         authUserRepo.save(user);
-
-        otpSender.send(user.getPhone(), otp.plain());
 
         return new MessageResponse(msg.get("auth.register.otp_sent"));
     }
@@ -158,8 +161,9 @@ public class AuthService {
         checkLockout(user);
 
         if (!user.isVerified()) {
+            ensureRegistrationOtp(user);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    msg.get("auth.account.not_verified"));
+                    msg.get("auth.account.not_verified.otp_sent"));
         }
         if (!user.isActive()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg.get("auth.account.disabled"));
@@ -255,6 +259,24 @@ public class AuthService {
         otpSender.send(user.getPhone(), otp.plain());
 
         return new MessageResponse(msg.get("auth.otp.resent"));
+    }
+
+    private void ensureRegistrationOtp(AuthUser user) {
+        if (user.getOtpHash() == null || user.getOtpExpiryTime() == null
+                || Instant.now().isAfter(user.getOtpExpiryTime())) {
+            issueRegistrationOtp(user);
+        }
+    }
+
+    private void issueRegistrationOtp(AuthUser user) {
+        OtpService.OtpPair otp = otpService.generate();
+        user.setOtpHash(otp.hash());
+        user.setOtpExpiryTime(Instant.now().plus(otpService.expiryMinutes(), ChronoUnit.MINUTES));
+        user.setOtpResendCount(0);
+        user.setOtpResendResetAt(Instant.now());
+        user.setRegistrationToken(null);
+        user.setRegistrationTokenExpiresAt(null);
+        otpSender.send(user.getPhone(), otp.plain());
     }
 
     // ── Forgot Password ──────────────────────────────────────────────────────

@@ -1,0 +1,134 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-governorates-areas
+      author: copilot
+      changes:
+        - createTable:
+            tableName: governorates
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name_ar
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name_en
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: areas
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: governorate_id
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name_ar
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name_en
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: areas
+            baseColumnNames: governorate_id
+            referencedTableName: governorates
+            referencedColumnNames: id
+            constraintName: fk_areas_governorate
+
+        - insert:
+            tableName: governorates
+            columns:
+              - column: { name: id, valueNumeric: 1 }
+              - column: { name: name_ar, value: 'الإسكندرية' }
+              - column: { name: name_en, value: 'Alexandria' }
+        - insert:
+            tableName: governorates
+            columns:
+              - column: { name: id, valueNumeric: 2 }
+              - column: { name: name_ar, value: 'القاهرة' }
+              - column: { name: name_en, value: 'Cairo' }
+        - insert:
+            tableName: governorates
+            columns:
+              - column: { name: id, valueNumeric: 3 }
+              - column: { name: name_ar, value: 'الجيزة' }
+              - column: { name: name_en, value: 'Giza' }
+
+        - insert:
+            tableName: areas
+            columns:
+              - column: { name: id, valueNumeric: 1 }
+              - column: { name: governorate_id, valueNumeric: 1 }
+              - column: { name: name_ar, value: 'سموحة' }
+              - column: { name: name_en, value: 'Smoha' }
+        - insert:
+            tableName: areas
+            columns:
+              - column: { name: id, valueNumeric: 2 }
+              - column: { name: governorate_id, valueNumeric: 1 }
+              - column: { name: name_ar, value: 'المندرة' }
+              - column: { name: name_en, value: 'Al Mandara' }
+        - insert:
+            tableName: areas
+            columns:
+              - column: { name: id, valueNumeric: 3 }
+              - column: { name: governorate_id, valueNumeric: 1 }
+              - column: { name: name_ar, value: 'الورديان' }
+              - column: { name: name_en, value: 'Al Wardian' }
+        - insert:
+            tableName: areas
+            columns:
+              - column: { name: id, valueNumeric: 4 }
+              - column: { name: governorate_id, valueNumeric: 1 }
+              - column: { name: name_ar, value: 'العصافرة' }
+              - column: { name: name_en, value: 'El Agamy' }
+        - insert:
+            tableName: areas
+            columns:
+              - column: { name: id, valueNumeric: 5 }
+              - column: { name: governorate_id, valueNumeric: 1 }
+              - column: { name: name_ar, value: 'سيدي بشر' }
+              - column: { name: name_en, value: 'Sidi Bishr' }
+        - insert:
+            tableName: areas
+            columns:
+              - column: { name: id, valueNumeric: 6 }
+              - column: { name: governorate_id, valueNumeric: 2 }
+              - column: { name: name_ar, value: 'المعادي' }
+              - column: { name: name_en, value: 'Maadi' }
+        - insert:
+            tableName: areas
+            columns:
+              - column: { name: id, valueNumeric: 7 }
+              - column: { name: governorate_id, valueNumeric: 3 }
+              - column: { name: name_ar, value: 'الهرم' }
+              - column: { name: name_en, value: 'Al Haram' }
+
+        - sql:
+            dbms: postgresql
+            endDelimiter: ";"
+            sql: |
+              SELECT setval(pg_get_serial_sequence('governorates', 'id'), COALESCE((SELECT MAX(id) FROM governorates), 1), true);
+              SELECT setval(pg_get_serial_sequence('areas', 'id'), COALESCE((SELECT MAX(id) FROM areas), 1), true);

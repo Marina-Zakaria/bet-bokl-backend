@@ -1,0 +1,147 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-add-listing-inspection-indexes
+      author: home-rental-service
+      changes:
+        - createIndex:
+            tableName: property_applications
+            indexName: idx_property_applications_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: property_applications
+            indexName: idx_property_applications_inspector_id
+            columns:
+              - column:
+                  name: inspector_id
+        - createIndex:
+            tableName: property_applications
+            indexName: idx_property_applications_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: property_applications
+            indexName: idx_property_applications_inspector_status
+            columns:
+              - column:
+                  name: inspector_id
+              - column:
+                  name: status
+        - createIndex:
+            tableName: inspection_schedules
+            indexName: idx_inspection_schedules_application_id
+            columns:
+              - column:
+                  name: application_id
+        - createIndex:
+            tableName: inspection_schedules
+            indexName: idx_inspection_schedules_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: inspection_schedules
+            indexName: idx_inspection_schedules_proposed_start
+            columns:
+              - column:
+                  name: proposed_start
+        - createIndex:
+            tableName: inspection_schedules
+            indexName: idx_inspection_schedules_exact_time
+            columns:
+              - column:
+                  name: exact_time
+        - createIndex:
+            tableName: inspection_reports
+            indexName: idx_inspection_reports_inspector_id
+            columns:
+              - column:
+                  name: inspector_id
+        - createIndex:
+            tableName: inspection_reports
+            indexName: idx_inspection_reports_schedule_id
+            columns:
+              - column:
+                  name: schedule_id
+        - createIndex:
+            tableName: inspection_reports
+            indexName: idx_inspection_reports_property_detail_id
+            columns:
+              - column:
+                  name: property_detail_id
+        - createIndex:
+            tableName: admin_decisions
+            indexName: idx_admin_decisions_application_id
+            columns:
+              - column:
+                  name: application_id
+        - createIndex:
+            tableName: admin_decisions
+            indexName: idx_admin_decisions_admin_id
+            columns:
+              - column:
+                  name: admin_id
+        - createIndex:
+            tableName: admin_decisions
+            indexName: idx_admin_decisions_decision
+            columns:
+              - column:
+                  name: decision
+        - createIndex:
+            tableName: listings
+            indexName: idx_listings_owner_id
+            columns:
+              - column:
+                  name: owner_id
+        - createIndex:
+            tableName: listings
+            indexName: idx_listings_application_id
+            columns:
+              - column:
+                  name: application_id
+        - createIndex:
+            tableName: listings
+            indexName: idx_listings_decision_id
+            columns:
+              - column:
+                  name: decision_id
+        - createIndex:
+            tableName: listings
+            indexName: idx_listings_status
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            tableName: terms_consents
+            indexName: idx_terms_consents_application_id
+            columns:
+              - column:
+                  name: application_id
+        - createIndex:
+            tableName: terms_consents
+            indexName: idx_terms_consents_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: terms_consents
+            indexName: idx_terms_consents_terms_definition_id
+            columns:
+              - column:
+                  name: terms_definition_id
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_user_is_read
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: is_read

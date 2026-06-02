@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-seed-roles
+      author: home-rental-service
+      changes:
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: role_name
+                  value: USER
+              - column:
+                  name: description
+                  value: Standard user
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: role_name
+                  value: ADMIN
+              - column:
+                  name: description
+                  value: Admin user with full control for dashboard access
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: role_name
+                  value: INSPECTOR
+              - column:
+                  name: description
+                  value: For dashboard access also but with limited responsibilities
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: role_name
+                  value: OWNER
+              - column:
+                  name: description
+                  value: Has a property listed for rental
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: role_name
+                  value: RENTER
+              - column:
+                  name: description
+                  value: User has rented one or more times one of the properties
