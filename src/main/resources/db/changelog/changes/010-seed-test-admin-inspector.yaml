@@ -2,6 +2,8 @@ databaseChangeLog:
   - changeSet:
       id: 010-seed-test-admin-inspector
       author: home-rental-service
+      context: local,test
+      validCheckSum: ANY
       comment: "Seed test admin and inspector users for development/testing"
       changes:
         - insert:

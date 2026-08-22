@@ -26,6 +26,7 @@ Thumbs.db
 # Secrets — never commit
 .env
 *.env.local
+.env.staging
 
 # Generated build output
 bin/

@@ -3,6 +3,7 @@ package com.bokl.homerental.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Primary
+@Profile("!prod | staging")
 public class StubOtpSender implements OtpSender {
 
     private static final Logger log = LoggerFactory.getLogger(StubOtpSender.class);
