@@ -2,370 +2,429 @@
   "info": {
     "name": "home-rental-service",
     "_postman_id": "e4ec778f-08fb-414f-adc2-0541756a4ad8",
-    "description": "home-rental-service API collection.\n\n## Setup\nRun **Setup / Fetch Public Key** once per server session before using any auth endpoints.\nThat request stores the server's RSA public key in `rsaPublicKey`.\n\n## Sensitive field encryption\nThe collection pre-request script automatically encrypts `password`, `newPassword`, and `otp` fields using RSA-OAEP SHA-256 before every request. Values are prefixed with `ENC:` — the server strips the prefix and decrypts.\n\n## Collection variables\n| Variable | Description |\n|---|---|\n| `baseUrl` | Base URL (default: http://localhost:8080) |\n| `accessToken` | Set automatically after Login / Complete Registration |\n| `refreshToken` | Set automatically after Login / Complete Registration |\n| `registrationToken` | Set automatically after Verify Otp |\n| `rsaPublicKey` | Set automatically by Setup / Fetch Public Key |\n| `acceptLanguage` | Preferred response language for requests, e.g. ar or en |\n",
+    "description": "Home Rental Service API - All Endpoints\n\n## Authentication\n- Register: `POST /auth/register` → Verify OTP: `POST /auth/verify-otp` → Complete: `POST /auth/complete-registration`\n- Login: `POST /auth/login` (sets `accessToken` / `ownerToken` / `adminToken` / `inspectorToken`)\n\n## Owner Workflow\n1. **Register & Login** as owner (sets `ownerToken` and `accessToken`)\n2. **Get Locations**: Fetch governorates and areas for property location\n3. **Get Terms**: Review active rental terms and commission percentages\n4. **Create Application**: Submit property with details, amenities, and photos\n5. **Submit Inspection Windows**: Provide 4-5 time slots for inspection (after admin assigns inspector)\n6. **Get Schedules**: View proposed and confirmed inspection times\n7. **Submit Consent**: Agree to rental terms and provide consent\n\n## Admin Workflow\n1. **Admin Login**: `POST /auth/login` with `{\"usernameOrPhone\": \"+201000000001\", \"password\": \"Admin@123456\"}` (sets `adminToken`)\n2. **List Applications**: Review all submitted applications\n3. **Review Application**: Approve (→ UNDER_REVIEW) or Reject (→ REJECTED)\n4. **Assign Inspector**: Assign an inspector to an application (→ PENDING_INSPECTOR_SLOTS)\n5. **Review Report**: Approve report (→ PENDING_OWNER_CONSENT), Reject (→ REJECTED), or Request Re-inspection\n6. **Activate Listing**: Activate once owner has consented (→ LISTED)\n\n## Inspector Workflow\n1. **Inspector Login**: `POST /auth/login` with `{\"usernameOrPhone\": \"+201000000002\", \"password\": \"Inspector@123456\"}` (sets `inspectorToken`)\n2. **List Assigned Applications**: View all applications assigned to you\n3. **Get Schedules**: View proposed inspection windows for an application\n4. **Confirm Slot**: Pick exact inspection time within a proposed window (→ INSPECTION_SCHEDULED)\n5. **Submit Report**: Submit inspection findings and property details (→ INSPECTION_COMPLETED)\n\n## Collection Variables\n- `baseUrl`: API base URL (default: http://localhost:8080)\n- `accessToken`: Set after any login\n- `ownerToken`: Set after owner login\n- `adminToken`: Set after admin login\n- `inspectorToken`: Set after inspector login\n- `registrationToken`: Set after verify-otp (used in complete-registration)\n- `applicationId`: Current application ID for testing\n- `scheduleId`: Current inspection schedule ID\n",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "event": [
+  "variable": [
     {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "var SENSITIVE = ['password', 'newPassword', 'otp'];",
-          "var ENC_PREFIX = 'ENC:';",
-          "var acceptLanguage = pm.collectionVariables.get('acceptLanguage');",
-          "if (acceptLanguage) {",
-          "    pm.request.headers.upsert({ key: 'Accept-Language', value: acceptLanguage });",
-          "}",
-          "if (!pm.request || !pm.request.body || pm.request.body.mode !== 'raw') return;",
-          "var body;",
-          "try { body = JSON.parse(pm.request.body.raw); } catch (e) { return; }",
-          "var toEncrypt = SENSITIVE.filter(function(f) {",
-          "    return body[f] !== undefined && !String(body[f]).startsWith(ENC_PREFIX);",
-          "});",
-          "if (toEncrypt.length === 0) return;",
-          "function encryptFields(publicKeyB64) {",
-          "    try {",
-          "        var forge = require('node-forge');",
-          "        var der = forge.util.decode64(publicKeyB64);",
-          "        var asn1 = forge.asn1.fromDer(der);",
-          "        var publicKey = forge.pki.publicKeyFromAsn1(asn1);",
-          "        toEncrypt.forEach(function(field) {",
-          "            var encrypted = publicKey.encrypt(String(body[field]), 'RSA-OAEP', {",
-          "                md: forge.md.sha256.create(),",
-          "                mgf1: { md: forge.md.sha256.create() }",
-          "            });",
-          "            body[field] = ENC_PREFIX + forge.util.encode64(encrypted);",
-          "        });",
-          "        pm.request.body.raw = JSON.stringify(body, null, 2);",
-          "        console.log('[Encryption] Encrypted: ' + toEncrypt.join(', '));",
-          "    } catch (err) {",
-          "        console.error('[Encryption] Failed:', err.message);",
-          "    }",
-          "}",
-          "var cachedKey = pm.collectionVariables.get('rsaPublicKey');",
-          "if (cachedKey) {",
-          "    encryptFields(cachedKey);",
-          "} else {",
-          "    var baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
-          "    pm.sendRequest({ url: baseUrl + '/auth/public-key', method: 'GET' }, function(err, res) {",
-          "        if (!err && res && res.code === 200) {",
-          "            var key = res.json().publicKey;",
-          "            pm.collectionVariables.set('rsaPublicKey', key);",
-          "            encryptFields(key);",
-          "        } else {",
-          "            console.error('[Encryption] Could not fetch public key. Run Setup/Fetch Public Key first.');",
-          "        }",
-          "    });",
-          "}"
-        ]
-      }
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "inspectorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "applicationId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "scheduleId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "ownerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "registrationToken",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "Setup",
-      "item": [
-        {
-          "name": "Fetch Public Key",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var key = pm.response.json().publicKey;",
-                  "    pm.collectionVariables.set('rsaPublicKey', key);",
-                  "    console.log('[Setup] RSA public key saved to rsaPublicKey.');",
-                  "    pm.test('Public key fetched', function() {",
-                  "        pm.expect(key).to.be.a('string').and.not.empty;",
-                  "    });",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/auth/public-key",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "public-key"
-              ]
-            },
-            "description": "Fetches the server's RSA public key (DER, Base64). Run this once per server session. The test script saves it to `rsaPublicKey` for use in the collection encryption script."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Health Check",
-      "item": [
-        {
-          "name": "Health",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/health",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "health"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Auth",
+      "name": "🔑 Authentication",
+      "description": "All auth endpoints — register, verify OTP, complete registration, login, logout, refresh, resend OTP, forgot/reset password",
       "item": [
         {
           "name": "Register",
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status is 200', function() { pm.response.to.have.status(200); });"]}}],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"phone\": \"+201234567890\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"name\": \"Test Owner\",\n  \"phone\": \"+201012345678\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "register"
-              ]
-            },
-            "description": "Screen 1/3: creates an unverified account and sends an OTP to the phone. No password or username at this stage. If the phone was already registered but not verified, a new OTP is reissued."
+            "url": {"raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"]}
           },
           "response": []
         },
         {
-          "name": "Verify Otp",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var body = pm.response.json();",
-                  "    if (body.registrationToken) {",
-                  "        pm.collectionVariables.set('registrationToken', body.registrationToken);",
-                  "        console.log('[Auth] registrationToken saved.');",
-                  "    }",
-                  "    pm.test('registrationToken present', function() {",
-                  "        pm.expect(body.registrationToken).to.be.a('string').and.not.empty;",
-                  "    });",
-                  "}"
-                ]
-              }
+          "name": "Verify OTP",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                "var json = pm.response.json();",
+                "if (json.registrationToken) {",
+                "    pm.collectionVariables.set('registrationToken', json.registrationToken);",
+                "}"
+              ]
             }
-          ],
+          }],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"identifier\": \"+201234567890\",\n  \"otp\": \"123456\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"identifier\": \"+201012345678\",\n  \"otp\": \"111111\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/verify-otp",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "verify-otp"
-              ]
-            },
-            "description": "Screen 2/3: validates the OTP (auto-encrypted by the pre-request script). Returns a short-lived `registrationToken` (30 min) saved automatically to the collection variable."
+            "url": {"raw": "{{baseUrl}}/auth/verify-otp", "host": ["{{baseUrl}}"], "path": ["auth", "verify-otp"]}
           },
           "response": []
         },
         {
           "name": "Complete Registration",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var body = pm.response.json();",
-                  "    if (body.accessToken)  pm.collectionVariables.set('accessToken',  body.accessToken);",
-                  "    if (body.refreshToken) pm.collectionVariables.set('refreshToken', body.refreshToken);",
-                  "    console.log('[Auth] accessToken and refreshToken saved.');",
-                  "    pm.test('Logged in after registration', function() {",
-                  "        pm.expect(body.accessToken).to.be.a('string').and.not.empty;",
-                  "    });",
-                  "}"
-                ]
-              }
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                "var json = pm.response.json();",
+                "if (json.accessToken) {",
+                "    pm.collectionVariables.set('ownerToken', json.accessToken);",
+                "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                "}"
+              ]
             }
-          ],
+          }],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"registrationToken\": \"{{registrationToken}}\",\n  \"password\": \"P@ssw0rd123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"registrationToken\": \"{{registrationToken}}\",\n  \"password\": \"Owner@123456\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/complete-registration",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "complete-registration"
-              ]
-            },
-            "description": "Screen 3/3: sets the account password (auto-encrypted). Username is auto-derived from phone digits. Returns JWT + refresh token (auto-login). Saves tokens to collection variables."
+            "url": {"raw": "{{baseUrl}}/auth/complete-registration", "host": ["{{baseUrl}}"], "path": ["auth", "complete-registration"]}
           },
           "response": []
         },
         {
-          "name": "Login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var body = pm.response.json();",
-                  "    if (body.accessToken)  pm.collectionVariables.set('accessToken',  body.accessToken);",
-                  "    if (body.refreshToken) pm.collectionVariables.set('refreshToken', body.refreshToken);",
-                  "    console.log('[Auth] accessToken and refreshToken saved.');",
-                  "}"
-                ]
-              }
+          "name": "Login as Owner",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                "var json = pm.response.json();",
+                "if (json.accessToken) {",
+                "    pm.collectionVariables.set('ownerToken', json.accessToken);",
+                "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                "}"
+              ]
             }
-          ],
+          }],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"usernameOrPhone\": \"+201234567890\",\n  \"password\": \"P@ssw0rd123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"usernameOrPhone\": \"+201012345678\",\n  \"password\": \"Owner@123456\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
+            "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"]}
+          },
+          "response": []
+        },
+        {
+          "name": "Login as Admin",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                "var json = pm.response.json();",
+                "if (json.accessToken) {",
+                "    pm.collectionVariables.set('adminToken', json.accessToken);",
+                "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                "}"
               ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrPhone\": \"+201000000001\",\n  \"password\": \"Admin@123456\"\n}"
             },
-            "description": "Authenticates with username or phone. The `password` field is encrypted automatically. Saves tokens to collection variables on success. If the account is unverified, the server will resend the registration OTP and return a localized message about the OTP being sent."
+            "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"]}
+          },
+          "response": []
+        },
+        {
+          "name": "Login as Inspector",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                "var json = pm.response.json();",
+                "if (json.accessToken) {",
+                "    pm.collectionVariables.set('inspectorToken', json.accessToken);",
+                "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrPhone\": \"+201000000002\",\n  \"password\": \"Inspector@123456\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"]}
           },
           "response": []
         },
         {
           "name": "Logout",
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status is 200', function() { pm.response.to.have.status(200); });"]}}],
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"refreshToken\": \"<your-refresh-token>\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "logout"
+            "url": {"raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"]}
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+                "var json = pm.response.json();",
+                "if (json.accessToken) { pm.collectionVariables.set('accessToken', json.accessToken); }"
               ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"<your-refresh-token>\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"]}
+          },
+          "response": []
+        },
+        {
+          "name": "Resend OTP",
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status is 200', function() { pm.response.to.have.status(200); });"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"+201012345678\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/resend-otp", "host": ["{{baseUrl}}"], "path": ["auth", "resend-otp"]}
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status is 200', function() { pm.response.to.have.status(200); });"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"+201012345678\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"]}
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status is 200', function() { pm.response.to.have.status(200); });"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"+201012345678\",\n  \"otp\": \"111111\",\n  \"newPassword\": \"Owner@NewPass1\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"]}
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📍 Locations",
+      "description": "Public endpoints for location data - no authentication required",
+      "item": [
+        {
+          "name": "Get All Governorates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is array', function() {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/locations/governorates",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations", "governorates"]
             }
           },
           "response": []
         },
         {
-          "name": "Refresh",
+          "name": "Get Areas by Governorate",
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var body = pm.response.json();",
-                  "    if (body.accessToken) pm.collectionVariables.set('accessToken', body.accessToken);",
-                  "    console.log('[Auth] accessToken refreshed.');",
-                  "}"
+                  "pm.test('Status is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is array', function() {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/locations/governorates/2/areas",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations", "governorates", "2", "areas"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📋 Terms & Conditions",
+      "description": "Fetch rental terms and policies - requires authentication",
+      "item": [
+        {
+          "name": "Get Active Terms",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is array of terms', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    if(json.length > 0) {",
+                  "        pm.expect(json[0]).to.have.property('id');",
+                  "        pm.expect(json[0]).to.have.property('version');",
+                  "        pm.expect(json[0]).to.have.property('title');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/terms",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "terms"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Terms by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/terms/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "terms", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏠 Property Applications",
+      "description": "Create and manage property applications for listing",
+      "item": [
+        {
+          "name": "Create Property Application",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response has required fields', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('status');",
+                  "    pm.expect(json.status).to.equal('SUBMITTED');",
+                  "    pm.collectionVariables.set('applicationId', json.id);",
+                  "});"
                 ]
               }
             }
@@ -374,37 +433,9 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Resend Otp",
-          "request": {
-            "method": "POST",
-            "header": [
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -412,130 +443,500 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"identifier\": \"+201234567890\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"propertyDetail\": {\n    \"governorateId\": 2,\n    \"areaId\": 1,\n    \"address\": {\n      \"streetAddress\": \"123 Main Street\",\n      \"buildingNumber\": \"A\",\n      \"apartmentNumber\": \"101\",\n      \"landmark\": \"Near Central Park\",\n      \"latitude\": 30.0444,\n      \"longitude\": 31.2357,\n      \"googlePlaceId\": \"ChIJIQBpAG2qQRMR_6128GljmTQ\"\n    },\n    \"roomsCount\": 3,\n    \"areaSqm\": 150.5,\n    \"furnishing\": \"SEMI_FURNISHED\",\n    \"expectedRent\": 2500.00,\n    \"amenities\": [\"WiFi\", \"Parking\", \"Gym\", \"Pool\"],\n    \"photos\": [\n      \"https://example.com/photo1.jpg\",\n      \"https://example.com/photo2.jpg\"\n    ]\n  }\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/auth/resend-otp",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "resend-otp"
+              "raw": "{{baseUrl}}/api/listings/applications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "applications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List My Applications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is paginated', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('content');",
+                  "    pm.expect(json).to.have.property('totalElements');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/applications?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "applications"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "SUBMITTED",
+                  "disabled": true
+                }
               ]
             }
           },
           "response": []
         },
         {
-          "name": "Forgot Password",
+          "name": "Get Application Details",
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"identifier\": \"+201234567890\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "{{baseUrl}}/auth/forgot-password",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "forgot-password"
-              ]
+              "raw": "{{baseUrl}}/api/listings/applications/{{applicationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "applications", "{{applicationId}}"]
             }
-          },
-          "response": []
-        },
-        {
-          "name": "Reset Password",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"identifier\": \"+201234567890\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewP@ssw0rd123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/reset-password",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "reset-password"
-              ]
-            },
-            "description": "The `otp` and `newPassword` fields are encrypted automatically by the pre-request script."
           },
           "response": []
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080",
-      "type": "string",
-      "description": "Base URL. Change for staging/production."
     },
     {
-      "key": "accessToken",
-      "value": "",
-      "type": "string",
-      "description": "JWT access token. Set automatically after Login or Complete Registration."
+      "name": "📅 Inspection Windows",
+      "description": "Submit availability windows and view inspection schedules",
+      "item": [
+        {
+          "name": "Submit Inspection Windows (4-5 slots)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"proposedStart\": \"2026-06-05T09:00:00Z\",\n    \"proposedEnd\": \"2026-06-05T11:00:00Z\"\n  },\n  {\n    \"proposedStart\": \"2026-06-05T14:00:00Z\",\n    \"proposedEnd\": \"2026-06-05T16:00:00Z\"\n  },\n  {\n    \"proposedStart\": \"2026-06-06T09:00:00Z\",\n    \"proposedEnd\": \"2026-06-06T11:00:00Z\"\n  },\n  {\n    \"proposedStart\": \"2026-06-06T14:00:00Z\",\n    \"proposedEnd\": \"2026-06-06T16:00:00Z\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/applications/{{applicationId}}/inspection-windows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "applications", "{{applicationId}}", "inspection-windows"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inspection Schedules",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/applications/{{applicationId}}/inspection-schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "applications", "{{applicationId}}", "inspection-schedules"]
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
-      "key": "refreshToken",
-      "value": "",
-      "type": "string",
-      "description": "Refresh token. Set automatically after Login or Complete Registration."
+      "name": "✅ Owner Consent",
+      "description": "Submit rental terms agreement and consent",
+      "item": [
+        {
+          "name": "Submit Terms Consent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response indicates consent provided', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.equal('CONSENT_PROVIDED');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"termsDefinitionId\": 1,\n  \"agreedRent\": 2400.00,\n  \"commissionPercentage\": 5.00,\n  \"ipAddress\": \"192.168.1.1\",\n  \"userAgent\": \"Mozilla/5.0 (Linux; Android 13; Pixel 6)\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/applications/{{applicationId}}/terms-consent",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "applications", "{{applicationId}}", "terms-consent"]
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
-      "key": "registrationToken",
-      "value": "",
-      "type": "string",
-      "description": "Short-lived registration token. Set automatically after Verify Otp."
+      "name": "🔐 Admin - Application Management",
+      "description": "Admin endpoints for managing property applications.\nLogin: POST /auth/login {\"usernameOrPhone\": \"+201000000001\", \"password\": \"Admin@123456\"}",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "    pm.collectionVariables.set('adminToken', json.accessToken);",
+                  "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "}",
+                  "pm.test('Login successful', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrPhone\": \"+201000000001\",\n  \"password\": \"Admin@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List All Applications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/listings/applications?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "listings", "applications"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "20"},
+                {"key": "status", "value": "", "disabled": true}
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Application By ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/listings/applications/{{applicationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "listings", "applications", "{{applicationId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Inspection Reports",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/listings/reports?page=0&size=20&inspectorId=14&fromDate=2026-01-01&toDate=2026-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "listings", "reports"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "20"},
+                {"key": "sort", "value": "createdAt,desc", "disabled": true},
+                {"key": "inspectorId", "value": "14", "disabled": true},
+                {"key": "fromDate", "value": "2026-01-01", "disabled": true},
+                {"key": "toDate", "value": "2026-12-31", "disabled": true}
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inspection Report By ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/listings/reports/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "listings", "reports", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Review Application (Approve/Reject)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APPROVE\",\n  \"finalRent\": null,\n  \"comments\": \"Property documents look good, proceeding with review.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/listings/applications/{{applicationId}}/review",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "listings", "applications", "{{applicationId}}", "review"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Inspector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inspectorId\": 14\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/listings/applications/{{applicationId}}/assign-inspector",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "listings", "applications", "{{applicationId}}", "assign-inspector"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Review Inspection Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APPROVE\",\n  \"finalRent\": 4500.00,\n  \"comments\": \"Inspection report approved. Property is in good condition.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/listings/applications/{{applicationId}}/review-report",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "listings", "applications", "{{applicationId}}", "review-report"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Activate Listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"finalRent\": 4500.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/listings/applications/{{applicationId}}/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "listings", "applications", "{{applicationId}}", "activate"]
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
-      "key": "rsaPublicKey",
-      "value": "",
-      "type": "string",
-      "description": "Server RSA public key (Base64 DER). Set automatically by Setup/Fetch Public Key."
-    },
-    {
-      "key": "acceptLanguage",
-      "value": "en",
-      "type": "string",
-      "description": "Preferred response language header for requests, e.g. ar for Arabic."
+      "name": "🔍 Inspector - Inspection Management",
+      "description": "Inspector endpoints for managing assigned inspections.\nLogin: POST /auth/login {\"usernameOrPhone\": \"+201000000002\", \"password\": \"Inspector@123456\"}",
+      "item": [
+        {
+          "name": "Inspector Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "    pm.collectionVariables.set('inspectorToken', json.accessToken);",
+                  "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "}",
+                  "pm.test('Login successful', function() { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrPhone\": \"+201000000002\",\n  \"password\": \"Inspector@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Assigned Applications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{inspectorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/inspector/applications?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "inspector", "applications"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "20"},
+                {"key": "status", "value": "", "disabled": true}
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assigned Application By ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{inspectorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/inspector/applications/{{applicationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "inspector", "applications", "{{applicationId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inspection Schedules",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{inspectorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/api/inspector/applications/{{applicationId}}/schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "inspector", "applications", "{{applicationId}}", "schedules"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Inspection Slot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{inspectorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exactTime\": \"2026-06-10T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/inspector/schedules/{{scheduleId}}/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "inspector", "schedules", "{{scheduleId}}", "confirm"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Inspection Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{inspectorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recommendation\": \"APPROVE\",\n  \"agreedRent\": 4500.00,\n  \"comments\": \"Property is in excellent condition. All utilities functional.\",\n  \"reportData\": {\n    \"overallCondition\": \"excellent\",\n    \"plumbing\": \"good\",\n    \"electrical\": \"good\",\n    \"structuralIntegrity\": \"good\"\n  },\n  \"evidencePhotos\": [\n    \"https://example.com/photo1.jpg\",\n    \"https://example.com/photo2.jpg\"\n  ],\n  \"propertyDetail\": {\n    \"governorateId\": 1,\n    \"areaId\": 2,\n    \"address\": {\n      \"streetAddress\": \"123 Main St\",\n      \"buildingNumber\": \"A\",\n      \"apartmentNumber\": \"5\",\n      \"landmark\": \"Near park\",\n      \"latitude\": 30.0444,\n      \"longitude\": 31.2357,\n      \"googlePlaceId\": \"ChIJGVtI4by3WBQRd6i7d5yQV2Q\"\n    },\n    \"roomsCount\": 3,\n    \"areaSqm\": 120.0,\n    \"furnishing\": \"FURNISHED\",\n    \"expectedRent\": 4500.00,\n    \"amenities\": [\"wifi\", \"parking\", \"elevator\"],\n    \"photos\": [\"https://example.com/prop1.jpg\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/inspector/schedules/{{scheduleId}}/report",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "inspector", "schedules", "{{scheduleId}}", "report"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

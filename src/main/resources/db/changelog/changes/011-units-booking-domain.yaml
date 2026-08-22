@@ -1,0 +1,533 @@
+# New simplified rental flow domain.
+# Legacy inspection/approval tables (006–010) are retained but unused by this flow.
+databaseChangeLog:
+  - changeSet:
+      id: 011-units-booking-domain
+      author: home-rental-service
+      changes:
+        - createTable:
+            tableName: rental_units
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: owner_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: governorate_id
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: area_id
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: street_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: building_number
+                  type: varchar(50)
+              - column:
+                  name: apartment_number
+                  type: varchar(50)
+              - column:
+                  name: landmark
+                  type: varchar(255)
+              - column:
+                  name: latitude
+                  type: decimal(10,8)
+              - column:
+                  name: longitude
+                  type: decimal(11,8)
+              - column:
+                  name: rooms_count
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: bathrooms_count
+                  type: int
+                  defaultValueNumeric: 1
+              - column:
+                  name: area_sqm
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: furnishing
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rent_per_day
+                  type: decimal(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: has_elevator
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_washing_machine
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_wifi
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_air_conditioning
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_parking
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_pool
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_tv
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_kitchen
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_balcony
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: has_water_heater
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: photos
+                  type: json
+                  constraints:
+                    nullable: false
+              - column:
+                  name: id_document_type
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: id_front_url
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: id_back_url
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(50)
+                  defaultValue: 'ACTIVE'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_verified
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: average_rating
+                  type: decimal(3,2)
+                  defaultValueNumeric: 0
+              - column:
+                  name: review_count
+                  type: int
+                  defaultValueNumeric: 0
+              - column:
+                  name: booking_count
+                  type: int
+                  defaultValueNumeric: 0
+              - column:
+                  name: terms_definition_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: terms_accepted_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: published_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+
+        - createTable:
+            tableName: unit_unavailability
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: unit_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: varchar(255)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - createTable:
+            tableName: bookings
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: unit_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: guest_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: check_in_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: check_out_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: total_amount
+                  type: decimal(12,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: paid_at
+                  type: timestamp
+              - column:
+                  name: checked_in_at
+                  type: timestamp
+              - column:
+                  name: checked_out_at
+                  type: timestamp
+              - column:
+                  name: guest_reviewed
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: owner_reviewed
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+
+        - createTable:
+            tableName: reviews
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: booking_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reviewer_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: review_type
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: unit_id
+                  type: bigint
+              - column:
+                  name: reviewee_user_id
+                  type: bigint
+              - column:
+                  name: rating
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: text
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - createTable:
+            tableName: unit_terms_consents
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: unit_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: terms_definition_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: accepted_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: ip_address
+                  type: varchar(45)
+              - column:
+                  name: user_agent
+                  type: text
+
+        - addForeignKeyConstraint:
+            baseTableName: rental_units
+            baseColumnNames: owner_id
+            referencedTableName: auth_users
+            referencedColumnNames: id
+            constraintName: fk_rental_units_owner
+        - addForeignKeyConstraint:
+            baseTableName: rental_units
+            baseColumnNames: governorate_id
+            referencedTableName: governorates
+            referencedColumnNames: id
+            constraintName: fk_rental_units_governorate
+        - addForeignKeyConstraint:
+            baseTableName: rental_units
+            baseColumnNames: area_id
+            referencedTableName: areas
+            referencedColumnNames: id
+            constraintName: fk_rental_units_area
+        - addForeignKeyConstraint:
+            baseTableName: rental_units
+            baseColumnNames: terms_definition_id
+            referencedTableName: terms_definitions
+            referencedColumnNames: id
+            constraintName: fk_rental_units_terms
+        - addForeignKeyConstraint:
+            baseTableName: unit_unavailability
+            baseColumnNames: unit_id
+            referencedTableName: rental_units
+            referencedColumnNames: id
+            constraintName: fk_unit_unavailability_unit
+        - addForeignKeyConstraint:
+            baseTableName: bookings
+            baseColumnNames: unit_id
+            referencedTableName: rental_units
+            referencedColumnNames: id
+            constraintName: fk_bookings_unit
+        - addForeignKeyConstraint:
+            baseTableName: bookings
+            baseColumnNames: guest_id
+            referencedTableName: auth_users
+            referencedColumnNames: id
+            constraintName: fk_bookings_guest
+        - addForeignKeyConstraint:
+            baseTableName: reviews
+            baseColumnNames: booking_id
+            referencedTableName: bookings
+            referencedColumnNames: id
+            constraintName: fk_reviews_booking
+        - addForeignKeyConstraint:
+            baseTableName: reviews
+            baseColumnNames: reviewer_id
+            referencedTableName: auth_users
+            referencedColumnNames: id
+            constraintName: fk_reviews_reviewer
+        - addForeignKeyConstraint:
+            baseTableName: reviews
+            baseColumnNames: unit_id
+            referencedTableName: rental_units
+            referencedColumnNames: id
+            constraintName: fk_reviews_unit
+        - addForeignKeyConstraint:
+            baseTableName: reviews
+            baseColumnNames: reviewee_user_id
+            referencedTableName: auth_users
+            referencedColumnNames: id
+            constraintName: fk_reviews_reviewee
+        - addForeignKeyConstraint:
+            baseTableName: unit_terms_consents
+            baseColumnNames: unit_id
+            referencedTableName: rental_units
+            referencedColumnNames: id
+            constraintName: fk_unit_terms_consents_unit
+        - addForeignKeyConstraint:
+            baseTableName: unit_terms_consents
+            baseColumnNames: user_id
+            referencedTableName: auth_users
+            referencedColumnNames: id
+            constraintName: fk_unit_terms_consents_user
+        - addForeignKeyConstraint:
+            baseTableName: unit_terms_consents
+            baseColumnNames: terms_definition_id
+            referencedTableName: terms_definitions
+            referencedColumnNames: id
+            constraintName: fk_unit_terms_consents_terms
+
+        - createIndex:
+            indexName: idx_rental_units_owner
+            tableName: rental_units
+            columns:
+              - column:
+                  name: owner_id
+        - createIndex:
+            indexName: idx_rental_units_status
+            tableName: rental_units
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            indexName: idx_rental_units_category
+            tableName: rental_units
+            columns:
+              - column:
+                  name: category
+        - createIndex:
+            indexName: idx_rental_units_gov_area
+            tableName: rental_units
+            columns:
+              - column:
+                  name: governorate_id
+              - column:
+                  name: area_id
+        - createIndex:
+            indexName: idx_rental_units_rent
+            tableName: rental_units
+            columns:
+              - column:
+                  name: rent_per_day
+        - createIndex:
+            indexName: idx_rental_units_street
+            tableName: rental_units
+            columns:
+              - column:
+                  name: street_name
+        - createIndex:
+            indexName: idx_unit_unavailability_unit_dates
+            tableName: unit_unavailability
+            columns:
+              - column:
+                  name: unit_id
+              - column:
+                  name: start_date
+              - column:
+                  name: end_date
+        - createIndex:
+            indexName: idx_bookings_unit_dates
+            tableName: bookings
+            columns:
+              - column:
+                  name: unit_id
+              - column:
+                  name: check_in_date
+              - column:
+                  name: check_out_date
+        - createIndex:
+            indexName: idx_bookings_guest
+            tableName: bookings
+            columns:
+              - column:
+                  name: guest_id
+        - createIndex:
+            indexName: idx_bookings_status
+            tableName: bookings
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            indexName: idx_reviews_unit
+            tableName: reviews
+            columns:
+              - column:
+                  name: unit_id
+        - createIndex:
+            indexName: idx_reviews_booking
+            tableName: reviews
+            columns:
+              - column:
+                  name: booking_id

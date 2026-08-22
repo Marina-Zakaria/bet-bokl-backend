@@ -1,0 +1,80 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-price-derived-unit-categories
+      author: home-rental-service
+      comment: Replace unit categories and configure automatic price-based classification
+      changes:
+        - createTable:
+            tableName: rental_unit_categories
+            columns:
+              - column:
+                  name: code
+                  type: varchar(50)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name_en
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name_ar
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sort_order
+                  type: int
+                  constraints:
+                    nullable: false
+        - insert:
+            tableName: rental_unit_categories
+            columns:
+              - column: { name: code, value: ECONOMY }
+              - column: { name: name_en, value: Economy }
+              - column: { name: name_ar, value: اقتصادي }
+              - column: { name: sort_order, valueNumeric: 1 }
+        - insert:
+            tableName: rental_unit_categories
+            columns:
+              - column: { name: code, value: PREMIUM }
+              - column: { name: name_en, value: Premium }
+              - column: { name: name_ar, value: مميز }
+              - column: { name: sort_order, valueNumeric: 2 }
+        - insert:
+            tableName: rental_unit_categories
+            columns:
+              - column: { name: code, value: HOTEL }
+              - column: { name: name_en, value: Hotel }
+              - column: { name: name_ar, value: فندقي }
+              - column: { name: sort_order, valueNumeric: 3 }
+        - sql:
+            dbms: postgresql
+            sql: |
+              UPDATE rental_units SET category = 'PREMIUM' WHERE category = 'COMPOUND';
+              UPDATE rental_units SET category = 'HOTEL' WHERE category = 'TOURIST';
+        - addForeignKeyConstraint:
+            baseTableName: rental_units
+            baseColumnNames: category
+            referencedTableName: rental_unit_categories
+            referencedColumnNames: code
+            constraintName: fk_rental_units_category
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key, value: unit_category_economy_max_nightly_price }
+              - column: { name: config_value, value: "1000.00" }
+              - column: { name: description, value: "Inclusive maximum nightly price for ECONOMY units" }
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key, value: unit_category_premium_max_nightly_price }
+              - column: { name: config_value, value: "2000.00" }
+              - column: { name: description, value: "Inclusive maximum nightly price for PREMIUM units; prices above the ECONOMY maximum enter this category" }
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key, value: unit_category_hotel_min_nightly_price }
+              - column: { name: config_value, value: "2000.00" }
+              - column: { name: description, value: "Exclusive minimum nightly price for HOTEL units; must equal the PREMIUM maximum" }

@@ -1,0 +1,53 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-unit-guest-capacity
+      author: home-rental-service
+      comment: Add unit guest limits and persist booking guest counts
+      changes:
+        - addColumn:
+            tableName: rental_units
+            columns:
+              - column:
+                  name: max_adults
+                  type: int
+                  defaultValueNumeric: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_children
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: bookings
+            columns:
+              - column:
+                  name: adults_count
+                  type: int
+                  defaultValueNumeric: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: children_count
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - sql:
+            dbms: postgresql
+            sql: |
+              ALTER TABLE rental_units
+                ADD CONSTRAINT chk_rental_units_max_adults CHECK (max_adults >= 1),
+                ADD CONSTRAINT chk_rental_units_max_children CHECK (max_children >= 0);
+              ALTER TABLE bookings
+                ADD CONSTRAINT chk_bookings_adults_count CHECK (adults_count >= 1),
+                ADD CONSTRAINT chk_bookings_children_count CHECK (children_count >= 0);
+        - createIndex:
+            tableName: rental_units
+            indexName: idx_rental_units_guest_capacity
+            columns:
+              - column:
+                  name: max_adults
+              - column:
+                  name: max_children

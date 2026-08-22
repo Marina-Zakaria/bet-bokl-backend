@@ -37,4 +37,16 @@ public class LocationController {
     public List<AreaDto> getAreas(@PathVariable Integer governorateId) {
         return locationService.getAreas(governorateId);
     }
+
+    /** Text search governorates by Arabic or English name. */
+    @GetMapping("/governorates/search")
+    public List<GovernorateDto> searchGovernorates(@RequestParam String q) {
+        return locationService.searchGovernorates(q);
+    }
+
+    /** Text search areas by Arabic or English name. */
+    @GetMapping("/areas/search")
+    public List<AreaDto> searchAreas(@RequestParam String q) {
+        return locationService.searchAreas(q);
+    }
 }

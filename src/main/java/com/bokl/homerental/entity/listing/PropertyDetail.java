@@ -54,9 +54,11 @@ public class PropertyDetail {
     private BigDecimal expectedRent;
 
     @Column(columnDefinition = "json")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     private String amenities;
 
     @Column(columnDefinition = "json", nullable = false)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     private String photos;
 
     @Enumerated(EnumType.STRING)

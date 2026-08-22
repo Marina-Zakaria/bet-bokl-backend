@@ -1,0 +1,94 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-booking-approval-policy
+      author: home-rental-service
+      comment: Add owner booking approval policy, expiry and instant-booking terms
+      changes:
+        - addColumn:
+            tableName: terms_definitions
+            columns:
+              - column:
+                  name: terms_type
+                  type: varchar(50)
+                  defaultValue: OWNER_LISTING
+                  constraints:
+                    nullable: false
+        - addColumn:
+            tableName: rental_units
+            columns:
+              - column:
+                  name: requires_owner_approval
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: instant_booking_terms_id
+                  type: bigint
+              - column:
+                  name: instant_booking_terms_accepted_at
+                  type: timestamp
+        - addColumn:
+            tableName: bookings
+            columns:
+              - column:
+                  name: approval_expires_at
+                  type: timestamp
+              - column:
+                  name: owner_decided_at
+                  type: timestamp
+              - column:
+                  name: owner_rejection_reason
+                  type: text
+        - addForeignKeyConstraint:
+            baseTableName: rental_units
+            baseColumnNames: instant_booking_terms_id
+            referencedTableName: terms_definitions
+            referencedColumnNames: id
+            constraintName: fk_rental_units_instant_terms
+        - sql:
+            dbms: postgresql
+            sql: |
+              ALTER TABLE rental_units
+                ADD CONSTRAINT chk_rental_units_booking_policy
+                CHECK (
+                  requires_owner_approval = TRUE
+                  OR (instant_booking_terms_id IS NOT NULL
+                      AND instant_booking_terms_accepted_at IS NOT NULL)
+                );
+        - insert:
+            tableName: app_config
+            columns:
+              - column: { name: config_key, value: booking_approval_expiration_hours }
+              - column: { name: config_value, value: "24" }
+              - column: { name: description, value: "Hours an owner has to approve a booking request before it expires" }
+        - insert:
+            tableName: terms_definitions
+            columns:
+              - column: { name: id, valueNumeric: 1001 }
+              - column: { name: version, value: "instant-booking-1.0" }
+              - column: { name: terms_type, value: INSTANT_BOOKING_COMMITMENT }
+              - column: { name: title_en, value: "Instant Booking Availability Commitment" }
+              - column: { name: title_ar, value: "التزام إتاحة الوحدة للحجز الفوري" }
+              - column:
+                  name: content_en
+                  value: "I confirm that I will keep the unit calendar accurate. When a booking is confirmed on an open date, I will make the unit available and fulfil the booking without requiring separate approval for each booking."
+              - column:
+                  name: content_ar
+                  value: "أؤكد أنني سأحافظ على دقة تقويم إتاحة الوحدة. عند تأكيد حجز في تاريخ متاح، سأوفر الوحدة وأنفذ الحجز دون الحاجة إلى موافقة منفصلة لكل حجز."
+              - column: { name: effective_at, valueDate: "2026-08-21T00:00:00" }
+              - column: { name: is_active, valueBoolean: true }
+        - sql:
+            dbms: postgresql
+            sql: |
+              SELECT setval(
+                pg_get_serial_sequence('terms_definitions', 'id'),
+                GREATEST((SELECT MAX(id) FROM terms_definitions), 1),
+                true
+              );
+        - createIndex:
+            tableName: bookings
+            indexName: idx_bookings_approval_expiration
+            columns:
+              - column: { name: status }
+              - column: { name: approval_expires_at }

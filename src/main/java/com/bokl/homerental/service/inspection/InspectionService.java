@@ -2,7 +2,11 @@ package com.bokl.homerental.service.inspection;
 
 import com.bokl.homerental.controller.dto.listing.ConfirmInspectionRequest;
 import com.bokl.homerental.controller.dto.listing.InspectionReportRequest;
+import com.bokl.homerental.controller.dto.listing.InspectionReportResponse;
+import com.bokl.homerental.controller.dto.listing.InspectionScheduleResponse;
 import com.bokl.homerental.controller.dto.listing.PropertyDetailRequest;
+import com.bokl.homerental.controller.dto.listing.PropertyApplicationResponse;
+import com.bokl.homerental.controller.dto.listing.PropertyDetailResponse;
 import com.bokl.homerental.entity.AuthUser;
 import com.bokl.homerental.entity.Governorate;
 import com.bokl.homerental.entity.Area;
@@ -18,8 +22,11 @@ import com.bokl.homerental.repository.listing.PropertyDetailRepository;
 import com.bokl.homerental.repository.listing.PropertyApplicationRepository;
 import com.bokl.homerental.repository.inspection.InspectionReportRepository;
 import com.bokl.homerental.repository.inspection.InspectionScheduleRepository;
+import com.bokl.homerental.service.MessageService;
 import com.bokl.homerental.security.SecurityUtils;
 import com.bokl.homerental.util.JsonUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +45,7 @@ public class InspectionService {
     private final AddressRepository addressRepository;
     private final GovernorateRepository governorateRepository;
     private final AreaRepository areaRepository;
+    private final MessageService msg;
 
     public InspectionService(
             InspectionScheduleRepository scheduleRepository,
@@ -46,7 +54,8 @@ public class InspectionService {
             PropertyDetailRepository propertyDetailRepository,
             AddressRepository addressRepository,
             GovernorateRepository governorateRepository,
-            AreaRepository areaRepository) {
+            AreaRepository areaRepository,
+            MessageService msg) {
         this.scheduleRepository = scheduleRepository;
         this.reportRepository = reportRepository;
         this.applicationRepository = applicationRepository;
@@ -54,24 +63,29 @@ public class InspectionService {
         this.addressRepository = addressRepository;
         this.governorateRepository = governorateRepository;
         this.areaRepository = areaRepository;
+        this.msg = msg;
     }
 
-    public InspectionSchedule confirmInspectionSlot(Long scheduleId, ConfirmInspectionRequest request) {
+    public InspectionScheduleResponse confirmInspectionSlot(Long scheduleId, ConfirmInspectionRequest request) {
         InspectionSchedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inspection schedule not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                msg.get("inspection.schedule.not_found")));
 
         PropertyApplication application = schedule.getApplication();
         AuthUser currentUser = SecurityUtils.currentUser();
         if (application.getInspector() == null || !application.getInspector().getId().equals(currentUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to confirm this inspection slot.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    msg.get("inspection.slot.confirm.forbidden"));
         }
         if (schedule.getStatus() != InspectionSchedule.Status.PROPOSED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only proposed slots may be confirmed.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    msg.get("inspection.slot.confirm.only_proposed"));
         }
 
         if (request.getExactTime().isBefore(schedule.getProposedStart())
                 || request.getExactTime().isAfter(schedule.getProposedEnd())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Exact inspection time must fit within the proposed window.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    msg.get("inspection.slot.confirm.time_out_of_range"));
         }
 
         schedule.setExactTime(request.getExactTime());
@@ -82,21 +96,24 @@ public class InspectionService {
         application.setStatus(PropertyApplication.Status.INSPECTION_SCHEDULED);
         applicationRepository.save(application);
 
-        return schedule;
+        return toScheduleResponse(schedule);
     }
 
-    public InspectionReport submitInspectionReport(Long scheduleId, InspectionReportRequest request) {
+    public InspectionReportResponse submitInspectionReport(Long scheduleId, InspectionReportRequest request) {
         InspectionSchedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inspection schedule not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                msg.get("inspection.schedule.not_found")));
 
         PropertyApplication application = schedule.getApplication();
         AuthUser currentUser = SecurityUtils.currentUser();
         if (application.getInspector() == null || !application.getInspector().getId().equals(currentUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to submit a report for this inspection.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    msg.get("inspection.report.submit.forbidden"));
         }
         if (schedule.getStatus() != InspectionSchedule.Status.CONFIRMED
                 && schedule.getStatus() != InspectionSchedule.Status.IN_PROGRESS) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only confirmed inspections may be reported.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    msg.get("inspection.report.submit.only_confirmed"));
         }
 
         PropertyDetailRequest detailRequest = request.getPropertyDetail();
@@ -104,9 +121,11 @@ public class InspectionService {
         addressRepository.save(address);
 
         Governorate governorate = governorateRepository.findById(detailRequest.getGovernorateId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Governorate not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                msg.get("error.governorate.not_found", detailRequest.getGovernorateId())));
         Area area = areaRepository.findById(detailRequest.getAreaId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Area not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                msg.get("error.area.not_found", detailRequest.getAreaId())));
 
         PropertyDetail finalDetail = new PropertyDetail();
         finalDetail.setAddress(address);
@@ -142,7 +161,16 @@ public class InspectionService {
         application.setStatus(PropertyApplication.Status.INSPECTION_COMPLETED);
         applicationRepository.save(application);
 
-        return report;
+        return new InspectionReportResponse(
+                report.getId(),
+                schedule.getId(),
+                currentUser.getId(),
+                PropertyDetailResponse.from(finalDetail),
+                report.getRecommendation().name(),
+                report.getAgreedRent(),
+                report.getComments(),
+                report.getCreatedAt()
+        );
     }
 
     private Address buildAddress(com.bokl.homerental.controller.dto.listing.AddressRequest request) {
@@ -155,5 +183,58 @@ public class InspectionService {
         address.setLongitude(request.getLongitude());
         address.setGooglePlaceId(request.getGooglePlaceId());
         return address;
+    }
+
+    public Page<PropertyApplicationResponse> listAssignedApplications(String status, Pageable pageable) {
+        AuthUser inspector = SecurityUtils.currentUser();
+        Page<PropertyApplication> page;
+        if (status != null && !status.isBlank()) {
+            PropertyApplication.Status statusEnum = PropertyApplication.Status.valueOf(status.toUpperCase());
+            page = applicationRepository.findByInspectorIdAndStatus(inspector.getId(), statusEnum, pageable);
+        } else {
+            page = applicationRepository.findByInspectorId(inspector.getId(), pageable);
+        }
+        return page.map(this::toResponse);
+    }
+
+    public PropertyApplicationResponse getAssignedApplicationById(Long applicationId) {
+        AuthUser inspector = SecurityUtils.currentUser();
+        PropertyApplication application = applicationRepository.findByIdAndInspectorId(applicationId, inspector.getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                msg.get("inspection.application.not_found")));
+        return toResponse(application);
+    }
+
+    public List<InspectionScheduleResponse> getSchedulesForApplication(Long applicationId) {
+        AuthUser inspector = SecurityUtils.currentUser();
+        applicationRepository.findByIdAndInspectorId(applicationId, inspector.getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                msg.get("inspection.application.not_found")));
+        return scheduleRepository.findByApplicationIdOrderBySelectionOrder(applicationId)
+                .stream().map(this::toScheduleResponse).collect(java.util.stream.Collectors.toList());
+    }
+
+    private InspectionScheduleResponse toScheduleResponse(InspectionSchedule s) {
+        return new InspectionScheduleResponse(
+                s.getId(),
+                s.getApplication().getId(),
+                s.getProposedStart(),
+                s.getProposedEnd(),
+                s.getExactTime(),
+                s.getStatus().name(),
+                s.getSelectionOrder(),
+                s.getConfirmedAt(),
+                s.getCreatedAt()
+        );
+    }
+
+    private PropertyApplicationResponse toResponse(PropertyApplication app) {
+        return new PropertyApplicationResponse(
+                app.getId(),
+                app.getStatus().name(),
+                app.getSubmittedAt(),
+                app.getUpdatedAt(),
+                PropertyDetailResponse.from(app.getPropertyDetail())
+        );
     }
 }

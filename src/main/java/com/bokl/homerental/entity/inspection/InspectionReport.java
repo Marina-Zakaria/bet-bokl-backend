@@ -5,6 +5,8 @@ import com.bokl.homerental.entity.listing.PropertyDetail;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -42,9 +44,11 @@ public class InspectionReport {
     @Column(name = "agreed_rent", nullable = false, precision = 10, scale = 2)
     private BigDecimal agreedRent;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "report_data", columnDefinition = "json", nullable = false)
     private String reportData;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "evidence_photos", columnDefinition = "json")
     private String evidencePhotos;
 

@@ -3,6 +3,7 @@ package com.bokl.homerental.security;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -32,6 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(cors -> {})
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
@@ -51,6 +53,16 @@ public class SecurityConfig {
                                 "/auth/reset-password",
                                 "/health",
                                 "/locations/**"
+                        ).permitAll()
+                        // Public browse (no login): search, details, reviews, availability, owner terms
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/units/search",
+                                "/api/units/most-rented",
+                                "/api/units/*",
+                                "/api/units/*/reviews",
+                                "/api/units/*/availability",
+                                "/api/terms",
+                                "/api/terms/*"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

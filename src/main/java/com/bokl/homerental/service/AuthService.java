@@ -225,7 +225,7 @@ public class AuthService {
                 rawRefreshToken,   // return the same refresh token unchanged
                 "Bearer",
                 jwtProvider.accessTokenExpirySeconds(),
-                new LoginResponse.UserInfo(user.getId(), user.getUsername(), user.getName(),
+                new LoginResponse.UserInfo(user.getId(), user.getUsername(), user.getName(), user.getPhone(),
                         user.getRoles().stream().map(UserRole::getRoleName).collect(Collectors.toList()))
         );
     }
@@ -345,7 +345,7 @@ public class AuthService {
                 rawRefreshToken,
                 "Bearer",
                 jwtProvider.accessTokenExpirySeconds(),
-                new LoginResponse.UserInfo(user.getId(), user.getUsername(), user.getName(),
+                new LoginResponse.UserInfo(user.getId(), user.getUsername(), user.getName(), user.getPhone(),
                         user.getRoles().stream().map(UserRole::getRoleName).collect(Collectors.toList()))
         );
     }

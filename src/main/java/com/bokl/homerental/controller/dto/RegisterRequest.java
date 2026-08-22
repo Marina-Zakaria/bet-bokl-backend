@@ -9,6 +9,6 @@ public record RegisterRequest(
         @NotBlank @Size(max = 100)
         String name,
 
-        @NotBlank @Pattern(regexp = "^\\+?[1-9]\\d{6,14}$", message = "must be a valid phone number")
+        @NotBlank @Pattern(regexp = "^(?:\\+?[1-9]\\d{6,14}|0\\d{9,10})$", message = "must be a valid phone number")
         String phone
 ) {}

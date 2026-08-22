@@ -1,0 +1,257 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-seed-inspection-elements
+      author: home-rental-service
+      changes:
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: washing_machine
+              - column:
+                  name: element_type
+                  value: BOOLEAN
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "غسالة الملابس"
+              - column:
+                  name: label_en
+                  value: "Washing Machine"
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 1
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: kettle
+              - column:
+                  name: element_type
+                  value: BOOLEAN
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "غلاية كهربائية"
+              - column:
+                  name: label_en
+                  value: "Kettle"
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 2
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: air_conditioners_count
+              - column:
+                  name: element_type
+                  value: INTEGER
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "عدد مكيفات الهواء"
+              - column:
+                  name: label_en
+                  value: "Air Conditioners Count"
+              - column:
+                  name: min_value
+                  value: 0
+              - column:
+                  name: max_value
+                  value: 10
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 3
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: parking
+              - column:
+                  name: element_type
+                  value: BOOLEAN
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "موقف سيارات"
+              - column:
+                  name: label_en
+                  value: "Parking"
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 4
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: wifi
+              - column:
+                  name: element_type
+                  value: BOOLEAN
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "إنترنت واي فاي"
+              - column:
+                  name: label_en
+                  value: "WiFi"
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 5
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: gym
+              - column:
+                  name: element_type
+                  value: BOOLEAN
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "صالة رياضية"
+              - column:
+                  name: label_en
+                  value: "Gym"
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 6
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: pool
+              - column:
+                  name: element_type
+                  value: BOOLEAN
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "حمام سباحة"
+              - column:
+                  name: label_en
+                  value: "Pool"
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 7
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: elevator
+              - column:
+                  name: element_type
+                  value: BOOLEAN
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "مصعد"
+              - column:
+                  name: label_en
+                  value: "Elevator"
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 8
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: microwave
+              - column:
+                  name: element_type
+                  value: BOOLEAN
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "فرن ميكروويف"
+              - column:
+                  name: label_en
+                  value: "Microwave"
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 9
+        - insert:
+            tableName: inspection_elements
+            columns:
+              - column:
+                  name: element_key
+                  value: balcony_count
+              - column:
+                  name: element_type
+                  value: INTEGER
+              - column:
+                  name: is_required
+                  valueBoolean: false
+              - column:
+                  name: label_ar
+                  value: "عدد الشرفات"
+              - column:
+                  name: label_en
+                  value: "Balcony Count"
+              - column:
+                  name: min_value
+                  value: 0
+              - column:
+                  name: max_value
+                  value: 10
+              - column:
+                  name: is_active
+                  valueBoolean: true
+              - column:
+                  name: sort_order
+                  valueNumeric: 10

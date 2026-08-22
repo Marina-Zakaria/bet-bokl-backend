@@ -26,10 +26,10 @@ public class Address {
     @Column(length = 255)
     private String landmark;
 
-    @Column(precision = 10, scale = 8)
+    @Column(name = "latitude")
     private Double latitude;
 
-    @Column(precision = 11, scale = 8)
+    @Column(name = "longitude")
     private Double longitude;
 
     @Column(name = "google_place_id", length = 255)

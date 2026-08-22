@@ -5,6 +5,8 @@ import com.bokl.homerental.repository.AppConfigRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 public class AppConfigService {
 
@@ -24,6 +26,15 @@ public class AppConfigService {
         return repo.findByKey(key)
                 .map(c -> {
                     try { return Integer.parseInt(c.getValue()); }
+                    catch (NumberFormatException e) { return defaultValue; }
+                })
+                .orElse(defaultValue);
+    }
+
+    public BigDecimal getDecimal(String key, BigDecimal defaultValue) {
+        return repo.findByKey(key)
+                .map(c -> {
+                    try { return new BigDecimal(c.getValue()); }
                     catch (NumberFormatException e) { return defaultValue; }
                 })
                 .orElse(defaultValue);

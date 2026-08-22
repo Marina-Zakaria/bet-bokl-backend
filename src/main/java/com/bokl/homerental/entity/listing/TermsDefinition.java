@@ -9,6 +9,10 @@ import java.time.Instant;
 @Entity
 @Table(name = "terms_definitions")
 public class TermsDefinition {
+    public enum Type {
+        OWNER_LISTING,
+        INSTANT_BOOKING_COMMITMENT
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +20,10 @@ public class TermsDefinition {
 
     @Column(nullable = false, unique = true, length = 50)
     private String version;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "terms_type", nullable = false, length = 50)
+    private Type type = Type.OWNER_LISTING;
 
     @Column(name = "title_ar", length = 255)
     private String titleAr;
@@ -57,6 +65,9 @@ public class TermsDefinition {
     public void setVersion(String version) {
         this.version = version;
     }
+
+    public Type getType() { return type; }
+    public void setType(Type type) { this.type = type; }
 
     public String getTitleAr() {
         return titleAr;

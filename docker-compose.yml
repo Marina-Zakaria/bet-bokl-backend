@@ -16,6 +16,7 @@ services:
       SPRING_DATASOURCE_USERNAME: appuser
       SPRING_DATASOURCE_PASSWORD: changeme
       JWT_SECRET: ${JWT_SECRET:-xbBPqZAxi5mEfhkrQGm1z2MvNOQcYkkaisktXr15CAk=}
+      BOOKING_APPROVAL_EXPIRATION_CRON: ${BOOKING_APPROVAL_EXPIRATION_CRON:-0 5 0 * * *}
     depends_on:
       db:
         condition: service_healthy

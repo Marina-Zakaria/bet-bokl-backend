@@ -1,0 +1,40 @@
+# Compiled class files
+*.class
+build/
+out/
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+*.iml
+*.iws
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets — never commit
+.env
+*.env.local
+
+# Generated build output
+bin/
+
+# Local release artifacts
+*.zip
+*.tar
+*.tar.gz
+release-*/
+
+# Postman backups
+postman/*.backup.json

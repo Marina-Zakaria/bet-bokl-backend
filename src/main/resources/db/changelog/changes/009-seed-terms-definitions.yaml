@@ -1,0 +1,98 @@
+databaseChangeLog:
+  - changeSet:
+      id: "009-seed-terms-definitions"
+      author: "system"
+      comment: "Seed terms_definitions table with rental policy terms"
+      changes:
+        - insert:
+            tableName: terms_definitions
+            columns:
+              - column:
+                  name: version
+                  value: "1.0"
+              - column:
+                  name: title_en
+                  value: "Standard Rental Terms v1.0"
+              - column:
+                  name: title_ar
+                  value: "شروط الإيجار القياسية v1.0"
+              - column:
+                  name: content_en
+                  value: |
+                    STANDARD RENTAL AGREEMENT TERMS & CONDITIONS
+
+                    1. COMMISSION RATE
+                    Bokl charges a commission of 5% of the first month's rental amount for listing and placement services.
+
+                    2. PAYMENT TERMS
+                    - Rent is due on the 1st of each month
+                    - Late payments incur a 1% monthly penalty
+                    - Payments must be made through the Bokl platform or authorized methods
+
+                    3. PROPERTY MAINTENANCE
+                    - Tenant is responsible for basic maintenance and cleanliness
+                    - Major repairs are the responsibility of the landlord
+                    - Property condition documentation is required at check-in and check-out
+
+                    4. INSURANCE & LIABILITY
+                    - Landlord must maintain property insurance
+                    - Tenant may purchase renter's insurance
+                    - Bokl is not liable for damages or disputes
+
+                    5. TERMINATION & CANCELLATION
+                    - Either party may terminate with 30 days written notice
+                    - Early termination may result in forfeiture of security deposit
+                    - Disputes are handled through arbitration
+
+                    6. DISPUTE RESOLUTION
+                    - All disputes must be reported within 7 days
+                    - Bokl will facilitate mediation between parties
+                    - Final decisions rest with arbitration if mediation fails
+
+                    These terms are effective immediately upon acceptance and binding for the rental period.
+              - column:
+                  name: content_ar
+                  value: |
+                    شروط وأحكام اتفاقية الإيجار القياسية
+
+                    1. معدل العمولة
+                    تفرض بوكل عمولة قدرها 5٪ من مبلغ الإيجار للشهر الأول مقابل خدمات الإدراج والتوسيط.
+
+                    2. شروط الدفع
+                    - يستحق الإيجار في اليوم الأول من كل شهر
+                    - التأخير في الدفع يترتب عليه عقوبة 1٪ شهرية
+                    - يجب إجراء الدفعات من خلال منصة بوكل أو الطرق المصرح بها
+
+                    3. صيانة الممتلكات
+                    - المستأجر مسؤول عن الصيانة الأساسية والنظافة
+                    - المالك مسؤول عن الإصلاحات الكبرى
+                    - توثيق حالة الممتلكات مطلوب عند الدخول والخروج
+
+                    4. التأمين والمسؤولية
+                    - يجب على المالك الحفاظ على تأمين الممتلكات
+                    - قد يقوم المستأجر بشراء تأمين المستأجرين
+                    - بوكل غير مسؤولة عن الأضرار أو النزاعات
+
+                    5. الإنهاء والإلغاء
+                    - يجوز لأي من الطرفين الإنهاء بإشعار كتابي قدره 30 يوم
+                    - قد يؤدي الإنهاء المبكر إلى مصادرة الوديعة
+                    - يتم التعامل مع النزاعات من خلال التحكيم
+
+                    6. تسوية النزاعات
+                    - يجب الإبلاغ عن جميع النزاعات في غضون 7 أيام
+                    - ستقوم بوكل بتيسير الوساطة بين الطرفين
+                    - تستقر القرارات النهائية مع التحكيم في حالة فشل الوساطة
+
+                    هذه الشروط سارية المفعول فوراً عند قبولها وملزمة لفترة الإيجار.
+              - column:
+                  name: effective_at
+                  value: "NOW()"
+              - column:
+                  name: is_active
+                  value: true
+              - column:
+                  name: created_at
+                  value: "NOW()"
+              - column:
+                  name: updated_at
+                  value: "NOW()"

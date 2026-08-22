@@ -27,3 +27,18 @@ databaseChangeLog:
       file: db/changelog/changes/006-create-listing-inspection-tables.yaml
   - include:
       file: db/changelog/changes/007-add-listing-inspection-indexes.yaml
+  - include:
+      file: db/changelog/changes/008-seed-inspection-elements.yaml
+  - include:
+      file: db/changelog/changes/009-seed-terms-definitions.yaml
+  - include:
+      file: db/changelog/changes/010-seed-test-admin-inspector.yaml
+  # New simplified unit/booking flow (legacy inspection tables above are retained but unused)
+  - include:
+      file: db/changelog/changes/011-units-booking-domain.yaml
+  - include:
+      file: db/changelog/changes/012-unit-guest-capacity.yaml
+  - include:
+      file: db/changelog/changes/013-booking-approval-policy.yaml
+  - include:
+      file: db/changelog/changes/014-price-derived-unit-categories.yaml

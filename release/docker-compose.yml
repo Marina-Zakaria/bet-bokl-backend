@@ -1,7 +1,7 @@
 services:
 
   app:
-    image: home-rental-service:v1.0.1
+    image: home-rental-service:renter-reviews-20260823
     container_name: home-rental-app
     ports:
       - "8080:8080"
@@ -12,6 +12,7 @@ services:
       SPRING_DATASOURCE_USERNAME: appuser
       SPRING_DATASOURCE_PASSWORD: changeme
       JWT_SECRET: xbBPqZAxi5mEfhkrQGm1z2MvNOQcYkkaisktXr15CAk=
+      BOOKING_APPROVAL_EXPIRATION_CRON: ${BOOKING_APPROVAL_EXPIRATION_CRON:-0 5 0 * * *}
     depends_on:
       db:
         condition: service_healthy

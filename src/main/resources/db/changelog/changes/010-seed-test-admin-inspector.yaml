@@ -1,0 +1,69 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-seed-test-admin-inspector
+      author: home-rental-service
+      comment: "Seed test admin and inspector users for development/testing"
+      changes:
+        - insert:
+            tableName: auth_users
+            columns:
+              - column:
+                  name: name
+                  value: Test Admin
+              - column:
+                  name: phone
+                  value: "+201000000001"
+              - column:
+                  name: username
+                  value: "201000000001"
+              - column:
+                  name: hashed_password
+                  value: "$2b$12$Hcvr8x/cJ86JvLfqM5hKp.XHBJPfm5ZvHQ4Nw36SzJKmkZTqAuGUG"
+              - column:
+                  name: is_verified
+                  valueBoolean: true
+              - column:
+                  name: is_active
+                  valueBoolean: true
+
+        - insert:
+            tableName: auth_user_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: "(SELECT id FROM auth_users WHERE username = '201000000001')"
+              - column:
+                  name: role_id
+                  valueComputed: "(SELECT id FROM user_roles WHERE role_name = 'ADMIN')"
+
+        - insert:
+            tableName: auth_users
+            columns:
+              - column:
+                  name: name
+                  value: Test Inspector
+              - column:
+                  name: phone
+                  value: "+201000000002"
+              - column:
+                  name: username
+                  value: "201000000002"
+              - column:
+                  name: hashed_password
+                  value: "$2b$12$2CPogKjRF1Sa95R0ARm4TeY5ziqbvhHlWvQnd0eRkyqnFbrA/qyFu"
+              - column:
+                  name: is_verified
+                  valueBoolean: true
+              - column:
+                  name: is_active
+                  valueBoolean: true
+
+        - insert:
+            tableName: auth_user_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: "(SELECT id FROM auth_users WHERE username = '201000000002')"
+              - column:
+                  name: role_id
+                  valueComputed: "(SELECT id FROM user_roles WHERE role_name = 'INSPECTOR')"

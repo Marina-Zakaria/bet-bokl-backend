@@ -8,17 +8,17 @@ public class PropertyApplicationResponse {
     private String status;
     private Instant submittedAt;
     private Instant updatedAt;
-    private Long propertyDetailId;
+    private PropertyDetailResponse propertyDetail;
 
     public PropertyApplicationResponse() {
     }
 
-    public PropertyApplicationResponse(Long id, String status, Instant submittedAt, Instant updatedAt, Long propertyDetailId) {
+    public PropertyApplicationResponse(Long id, String status, Instant submittedAt, Instant updatedAt, PropertyDetailResponse propertyDetail) {
         this.id = id;
         this.status = status;
         this.submittedAt = submittedAt;
         this.updatedAt = updatedAt;
-        this.propertyDetailId = propertyDetailId;
+        this.propertyDetail = propertyDetail;
     }
 
     public Long getId() {
@@ -53,11 +53,11 @@ public class PropertyApplicationResponse {
         this.updatedAt = updatedAt;
     }
 
-    public Long getPropertyDetailId() {
-        return propertyDetailId;
+    public PropertyDetailResponse getPropertyDetail() {
+        return propertyDetail;
     }
 
-    public void setPropertyDetailId(Long propertyDetailId) {
-        this.propertyDetailId = propertyDetailId;
+    public void setPropertyDetail(PropertyDetailResponse propertyDetail) {
+        this.propertyDetail = propertyDetail;
     }
 }

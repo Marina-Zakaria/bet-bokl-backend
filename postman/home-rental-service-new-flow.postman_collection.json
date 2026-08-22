@@ -1,0 +1,719 @@
+{
+  "info": {
+    "name": "Bokl Marketplace — Contract APIs",
+    "description": "Aligned with WEBSITE_BACKEND_API_CONTRACT.md. Nested RentalUnit/Booking shapes, Spring Page lists, CORS-ready.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "ownerToken",
+      "value": ""
+    },
+    {
+      "key": "guestToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "unitId",
+      "value": "1"
+    },
+    {
+      "key": "bookingId",
+      "value": "1"
+    },
+    {
+      "key": "blockId",
+      "value": "1"
+    },
+    {
+      "key": "termsId",
+      "value": "1"
+    },
+    {
+      "key": "governorateId",
+      "value": "2"
+    },
+    {
+      "key": "areaId",
+      "value": "1"
+    },
+    {
+      "key": "phone",
+      "value": "+201012345678"
+    },
+    {
+      "key": "password",
+      "value": "Test@123456"
+    },
+    {
+      "key": "otp",
+      "value": "111111"
+    },
+    {
+      "key": "registrationToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "instantBookingTermsId",
+      "value": "1001"
+    },
+    {
+      "key": "renterId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "GET /auth/public-key",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/public-key"
+          }
+        },
+        {
+          "name": "POST /auth/register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed Mohamed\",\n  \"phone\": \"{{phone}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "POST /auth/verify-otp",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{phone}}\",\n  \"otp\": \"{{otp}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/verify-otp"
+          }
+        },
+        {
+          "name": "POST /auth/complete-registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationToken\": \"{{registrationToken}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/complete-registration"
+          }
+        },
+        {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrPhone\": \"{{phone}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "POST /auth/refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/refresh"
+          }
+        },
+        {
+          "name": "POST /auth/forgot-password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{phone}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/forgot-password"
+          }
+        },
+        {
+          "name": "POST /auth/reset-password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"{{phone}}\",\n  \"otp\": \"{{otp}}\",\n  \"newPassword\": \"NewPass@123456\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/reset-password"
+          }
+        },
+        {
+          "name": "POST /auth/login (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrPhone\": \"+201000000001\",\n  \"password\": \"Admin@123456\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Locations (public)",
+      "item": [
+        {
+          "name": "GET /locations/governorates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": "{{baseUrl}}/locations/governorates"
+          }
+        },
+        {
+          "name": "GET /locations/governorates/search?q=",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/locations/governorates/search?q=Cairo"
+          }
+        },
+        {
+          "name": "GET /locations/governorates/{id}/areas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/locations/governorates/{{governorateId}}/areas"
+          }
+        },
+        {
+          "name": "GET /locations/areas/search?q=",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/locations/areas/search?q=Maadi"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Terms",
+      "item": [
+        {
+          "name": "GET /api/terms (active)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/terms"
+          }
+        },
+        {
+          "name": "GET /api/terms/{id}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/terms/{{termsId}}"
+          }
+        },
+        {
+          "name": "GET /api/terms/all (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/terms/all"
+          }
+        },
+        {
+          "name": "POST /api/terms (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"2.0\",\n  \"titleEn\": \"Owner Terms v2\",\n  \"titleAr\": \"شروط المالك v2\",\n  \"contentEn\": \"Updated English terms\",\n  \"contentAr\": \"شروط عربية محدثة\",\n  \"active\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/terms"
+          }
+        },
+        {
+          "name": "PUT /api/terms/{id} (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"1.0\",\n  \"titleEn\": \"Owner Listing Terms\",\n  \"titleAr\": \"شروط إدراج الوحدة\",\n  \"contentEn\": \"…\",\n  \"contentAr\": \"…\",\n  \"active\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/terms/{{termsId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Units — public browse",
+      "item": [
+        {
+          "name": "GET /api/units/categories — localized configured ranges",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/units/categories",
+            "description": "Returns ECONOMY, PREMIUM, and HOTEL labels in Arabic/English with current DB-configured nightly-price boundaries."
+          }
+        },
+        {
+          "name": "GET /api/units/most-rented",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/units/most-rented?page=0&size=12"
+          }
+        },
+        {
+          "name": "GET /api/units/search (text + filters + dates + guests)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/units/search?q=Maadi&category=ECONOMY&minRent=100&maxRent=1000&hasElevator=true&hasWashingMachine=true&arrivalDate=2026-09-01&leaveDate=2026-09-05&adultsCount=2&childrenCount=1&sort=PRICE_ASC&page=0&size=12"
+          }
+        },
+        {
+          "name": "GET /api/units/search (text only)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/units/search?q=Road%209&sort=MOST_RENTED&page=0&size=12"
+          }
+        },
+        {
+          "name": "GET /api/units/search (filters only, no q)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/units/search?category=TOURIST&verified=true&hasPool=true&sort=RATING&page=0&size=12"
+          }
+        },
+        {
+          "name": "GET /api/units/{id}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/units/{{unitId}}"
+          }
+        },
+        {
+          "name": "GET /api/units/{id}/reviews",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/units/{{unitId}}/reviews"
+          }
+        },
+        {
+          "name": "GET /api/units/{id}/availability",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/units/{{unitId}}/availability?from=2026-08-01&to=2026-10-01"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Units — owner (auth)",
+      "item": [
+        {
+          "name": "POST /api/units",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Cozy Maadi Flat\",\n  \"description\": \"Nice unit\",\n  \"governorateId\": {{governorateId}},\n  \"areaId\": {{areaId}},\n  \"streetName\": \"Road 9\",\n  \"buildingNumber\": \"12\",\n  \"apartmentNumber\": \"4B\",\n  \"landmark\": \"Near metro\",\n  \"latitude\": 29.96,\n  \"longitude\": 31.27,\n  \"roomsCount\": 2,\n  \"bathroomsCount\": 1,\n  \"areaSqm\": 90,\n  \"furnishing\": \"FURNISHED\",\n  \"rentPerDay\": 450.0,\n  \"maxAdults\": 4,\n  \"maxChildren\": 2,\n  \"hasElevator\": true,\n  \"hasWashingMachine\": true,\n  \"hasWifi\": true,\n  \"hasAirConditioning\": true,\n  \"hasParking\": false,\n  \"hasPool\": false,\n  \"hasTv\": true,\n  \"hasKitchen\": true,\n  \"hasBalcony\": true,\n  \"hasWaterHeater\": true,\n  \"photos\": [\n    \"https://cdn.example.com/1.jpg\"\n  ],\n  \"idDocumentType\": \"NATIONAL_ID\",\n  \"idFrontUrl\": \"https://cdn.example.com/id-front.jpg\",\n  \"idBackUrl\": \"https://cdn.example.com/id-back.jpg\",\n  \"termsDefinitionId\": {{termsId}},\n  \"acceptTerms\": true,\n  \"requiresOwnerApproval\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/units"
+          }
+        },
+        {
+          "name": "POST /api/units — instant booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Instant Booking Unit\",\n  \"description\": \"Nice unit\",\n  \"governorateId\": {{governorateId}},\n  \"areaId\": {{areaId}},\n  \"streetName\": \"Road 9\",\n  \"buildingNumber\": \"12\",\n  \"apartmentNumber\": \"4B\",\n  \"landmark\": \"Near metro\",\n  \"latitude\": 29.96,\n  \"longitude\": 31.27,\n  \"roomsCount\": 2,\n  \"bathroomsCount\": 1,\n  \"areaSqm\": 90,\n  \"furnishing\": \"FURNISHED\",\n  \"rentPerDay\": 450.0,\n  \"maxAdults\": 4,\n  \"maxChildren\": 2,\n  \"hasElevator\": true,\n  \"hasWashingMachine\": true,\n  \"hasWifi\": true,\n  \"hasAirConditioning\": true,\n  \"hasParking\": false,\n  \"hasPool\": false,\n  \"hasTv\": true,\n  \"hasKitchen\": true,\n  \"hasBalcony\": true,\n  \"hasWaterHeater\": true,\n  \"photos\": [\n    \"https://cdn.example.com/1.jpg\"\n  ],\n  \"idDocumentType\": \"NATIONAL_ID\",\n  \"idFrontUrl\": \"https://cdn.example.com/id-front.jpg\",\n  \"idBackUrl\": \"https://cdn.example.com/id-back.jpg\",\n  \"termsDefinitionId\": {{termsId}},\n  \"acceptTerms\": true,\n  \"requiresOwnerApproval\": false,\n  \"instantBookingTermsId\": {{instantBookingTermsId}},\n  \"acceptInstantBookingTerms\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/units"
+          }
+        },
+        {
+          "name": "GET /api/units/mine",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/units/mine?page=0&size=12"
+          }
+        },
+        {
+          "name": "POST /api/units/{id}/unavailability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startDate\": \"2026-09-01\",\n  \"endDate\": \"2026-09-05\",\n  \"reason\": \"Personal use\"\n}"
+            },
+            "url": "{{baseUrl}}/api/units/{{unitId}}/unavailability"
+          }
+        },
+        {
+          "name": "DELETE /api/units/{id}/unavailability/{blockId}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/units/{{unitId}}/unavailability/{{blockId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Bookings (auth)",
+      "item": [
+        {
+          "name": "POST /api/bookings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitId\": {{unitId}},\n  \"checkInDate\": \"2026-09-10\",\n  \"checkOutDate\": \"2026-09-13\",\n  \"adultsCount\": 2,\n  \"childrenCount\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/bookings"
+          }
+        },
+        {
+          "name": "GET /api/bookings/mine",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bookings/mine?page=0&size=12"
+          }
+        },
+        {
+          "name": "GET /api/bookings/as-owner",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bookings/as-owner?page=0&size=12"
+          }
+        },
+        {
+          "name": "GET /api/bookings/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}"
+          }
+        },
+        {
+          "name": "POST /api/bookings/{id}/approve — owner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}/approve"
+          }
+        },
+        {
+          "name": "POST /api/bookings/{id}/reject — owner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Owner unavailable\"\n}"
+            },
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}/reject"
+          }
+        },
+        {
+          "name": "POST /api/bookings/{id}/pay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}/pay"
+          }
+        },
+        {
+          "name": "POST /api/bookings/{id}/check-in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}/check-in"
+          }
+        },
+        {
+          "name": "POST /api/bookings/{id}/check-out",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}/check-out"
+          }
+        },
+        {
+          "name": "POST /api/bookings/{id}/cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}/cancel"
+          }
+        },
+        {
+          "name": "POST /api/bookings/{id}/reviews/unit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Great stay\"\n}"
+            },
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}/reviews/unit"
+          }
+        },
+        {
+          "name": "POST /api/bookings/{id}/reviews/renter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Respectful guest\"\n}"
+            },
+            "url": "{{baseUrl}}/api/bookings/{{bookingId}}/reviews/renter"
+          }
+        },
+        {
+          "name": "GET /api/renters/{renterId}/reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/renters/{{renterId}}/reviews",
+            "description": "Returns the renter name, average rating, review count, and owner reviews. Authentication required."
+          }
+        }
+      ]
+    }
+  ]
+}

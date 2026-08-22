@@ -59,6 +59,14 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, message, request);
     }
 
+    @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParam(
+            org.springframework.web.bind.MissingServletRequestParameterException ex,
+            HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST,
+                "Missing required parameter: " + ex.getParameterName(), request);
+    }
+
     /**
      * Malformed or unreadable JSON request body (e.g. syntax error, type mismatch).
      * The real parsing error is not forwarded to avoid leaking schema details.
