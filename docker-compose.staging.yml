@@ -18,21 +18,22 @@ services:
       - bokl-staging
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: home-rental-service:staging
+    # Built on your machine / CI and pushed to Docker Hub — never build on t3.micro.
+    image: ${APP_IMAGE:-essamfakher5/bet-bokl-backend:staging}
     container_name: bokl-staging-app
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: prod,staging
       SERVER_PORT: 8080
+      # Keep the JVM small on t3.micro (1 GB RAM shared with Postgres).
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=50.0 -Xms128m}
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
-      RSA_PRIVATE_KEY: ${RSA_PRIVATE_KEY:?RSA_PRIVATE_KEY is required}
-      RSA_PUBLIC_KEY: ${RSA_PUBLIC_KEY:?RSA_PUBLIC_KEY is required}
+      # Optional — if empty, the app generates ephemeral RSA keys on startup
+      RSA_PRIVATE_KEY: ${RSA_PRIVATE_KEY:-}
+      RSA_PUBLIC_KEY: ${RSA_PUBLIC_KEY:-}
       CORS_ALLOWED_ORIGIN_PATTERNS: ${CORS_ALLOWED_ORIGIN_PATTERNS:?CORS_ALLOWED_ORIGIN_PATTERNS is required}
       BOOKING_APPROVAL_EXPIRATION_CRON: ${BOOKING_APPROVAL_EXPIRATION_CRON:-0 5 0 * * *}
       TZ: ${TZ:-Africa/Cairo}
