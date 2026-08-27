@@ -54,13 +54,15 @@ public class SecurityConfig {
                                 "/health",
                                 "/locations/**"
                         ).permitAll()
-                        // Public browse (no login): search, details, reviews, availability, owner terms
+                        // Public browse (no login): search, details, reviews, availability, owner terms.
+                        // Use numeric {unitId} patterns only — "/api/units/*" also matched "/mine".
                         .requestMatchers(HttpMethod.GET,
                                 "/api/units/search",
                                 "/api/units/most-rented",
-                                "/api/units/*",
-                                "/api/units/*/reviews",
-                                "/api/units/*/availability",
+                                "/api/units/categories",
+                                "/api/units/{unitId:[0-9]+}",
+                                "/api/units/{unitId:[0-9]+}/reviews",
+                                "/api/units/{unitId:[0-9]+}/availability",
                                 "/api/terms",
                                 "/api/terms/*"
                         ).permitAll()
