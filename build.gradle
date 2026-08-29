@@ -36,6 +36,10 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.liquibase:liquibase-core'
 
+    // AWS S3 (presigned upload URLs)
+    implementation platform('software.amazon.awssdk:bom:2.25.70')
+    implementation 'software.amazon.awssdk:s3'
+
     // Structured logging (JSON output for prod via logback-spring.xml)
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
